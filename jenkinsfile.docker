@@ -1,0 +1,20 @@
+pipeline {
+    agent {label 'manage'}
+    stages{
+        stage ('vcs'){
+            steps{
+                git branch: 'master' , url: "https://github.com/DevProjectsForDevOps/StudentCoursesRestAPI.git"
+            }
+    
+        }
+        stage ('buildmanage'){
+            steps{
+                sh 'docker image build -t student:1.0 .'
+                sh 'docker image tag stdent:1.0 venu1212/student:1.0'
+                sh 'docker image push venu1212/student:1.0'
+                sh 'docker container run --name jenkins -d -P venu1212/student:1.0'
+            }
+        }
+    }
+}
+            

@@ -1,0 +1,26 @@
+pipeline {
+    agent { label 'docker' }
+    stages {
+        stage('vcs') {
+            steps {
+               git branch:'master', url: "https://github.com/DevProjectsForDevOps/StudentCoursesRestAPI.git"
+            }
+        }
+
+        stage  ('builddocker') {
+           steps {
+             sh 'curl -fsSL https://get.docker.com -o get-docker.sh'
+             sh 'sh get-docker.sh'
+             sh 'sudo chmod 666 /var/run/docker.sock'
+             sh 'sudo usermod -a -G docker ubuntu'
+             sh 'sudo systemctl restart docker'
+             sh 'docker info'
+             sh 'docker image build -t sunrise:1.0 .'
+             sh  'docker image tag sunrise:1.0 venu1212/sunrise:1.0'
+             sh 'docker image push venu1212/sunrise:1.0'
+             sh  'docker container run --name qtdevops -d -P venu1212/sunrise:1.0'
+
+            }
+        }
+    }
+}
