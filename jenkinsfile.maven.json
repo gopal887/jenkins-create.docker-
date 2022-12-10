@@ -1,0 +1,9 @@
+pipeline {
+    stage ('test') {
+      sh ' echo hello '
+    }
+}   stage ('learning'){
+     git url: 'https://github.com/jenkinsci/git-plugin'
+     branch: 'master'
+}
+ 

@@ -1,0 +1,41 @@
+pipeline {
+    agent  { label 'OPEN-STOPIES' }
+    parameters {
+        string(name: 'MAVEN_GOAL', defaultValue: 'package', description: 'maven goal')
+        string(name: 'MAVEN_GOAL', defaultValue: 'clean install', description: 'maven goal')
+    }
+    stages {
+        stage('vcs') {
+            steps {
+                git branch: 'master', url:'https://github.com/shopizer-ecommerce/shopizer.git'
+            }
+
+        }
+        stage('build and shopizer') {
+            steps {
+                sh '/usr/share/maven/bin/mvn package'
+                sh '/opt/apache-maven-3.8.6/bin/mvn ${params.MAVEN_GOAL}'
+            }
+        }
+        stage('archive results') {
+            steps {
+                junit '**/surefire-reports/*.xml'
+            }
+        }
+       stage ('Artifactory configuration') {
+           steps {
+                rtServer (
+                 id: "maven",
+                 url: "https://qtdevops66.jfrog.io/",
+                 credentialsId: "uvg66"
+               )
+                rtMavenDeployer (
+                    id: "MAVEN_DEPLOYER",
+                    serverId: "maven",
+                    releaseRepo: 'qt-libs-release-local',
+                    snapshotRepo: 'qt-libs-snapshot-local'
+                )
+            }
+        }
+    }
+}

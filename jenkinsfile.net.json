@@ -1,0 +1,18 @@
+pipeline {
+    agent { label 'DOTNET' }
+        stages {
+        stage('vcs') {
+            steps {
+                git url: 'https://github.com/GitPracticeRepo/dotnetcore-docs-hello-world.git', 
+                branch: 'master'
+            }
+        }
+        stage('build and test') {
+            steps {
+             sh "dotnet build dotnetcoresample.csproj"
+             sh "dotnet publish dotnetcoresample.csproj"
+            }
+        
+        }
+    }
+}

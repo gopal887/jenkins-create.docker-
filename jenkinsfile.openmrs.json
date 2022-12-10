@@ -1,0 +1,46 @@
+pipeline {
+    agent { label 'OPENJDK_NVM' }
+        stages {
+        stage('vcs') {
+            steps {
+                git url: 'https://github.com/openmrs/openmrs-core.git', 
+                branch: 'master'
+            }
+        }
+        stage('build and test') {
+            steps {
+             sh '/usr/share/maven/bin/mvn package'
+            }
+        }
+        stage('build') {
+        stage ('Artifactory configuration') {
+            steps {
+                sh "/opt/apache-maven-3.8.6/bin/mvn ${params.MAVEN_GOAL}"
+                rtServer (
+                    id: "JFROG_OCT22",
+                    url: "https://qtdevopsoct22.jfrog.io/",
+                    credentialsId: "JFROG_ADMIN_ID"
+                )
+                rtMavenDeployer (
+                    id: "MAVEN_DEPLOYER",
+                    serverId: "JFROG_OCT22",
+                    releaseRepo: 'qt-libs-release-local',
+                    snapshotRepo: 'qt-libs-snapshot-local'
+                )
+                      stage ('Exec Maven') {
+            steps {
+                rtMavenRun (
+                    tool: 'MAVEN_DEFAULT', // Tool name from Jenkins configuration
+                    pom: 'pom.xml',
+                    goals: 'clean install',
+                    deployerId: "MAVEN_DEPLOYER"
+                )
+            }
+        }
+                stage('archive results') {
+            steps {
+                junit '**/surefire-reports/*.xml'
+            }
+        }
+    }
+}

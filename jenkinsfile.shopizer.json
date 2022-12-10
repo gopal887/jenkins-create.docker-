@@ -1,0 +1,24 @@
+pipeline {
+    agent  {label 'OPEN-STOPIES'}
+    parameters {
+        string(name: 'MAVEN_GOAL', defaultValue: 'package', description: 'maven goal')      
+    }
+    stages {
+        stage('vcs') {
+            steps {
+             git branch: 'master', url:'https:'github.com/shopizer-ecommerce/shopizer.git'
+            }
+        }
+        stage('buildshopizer') {
+            steps {
+                sh '/usr/share/maven/bin/mvn clean package'
+                sh '/opt/apache-maven-3.8.6/bin/mvn ${params.MAVEN_GOAL}'
+            }
+        }
+        stage('archive results') {
+            steps {
+              junit '**/surefire-reports/*.xml'
+            }
+        }
+    }
+}
